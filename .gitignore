@@ -1,0 +1,86 @@
+# Python 가상 환경
+venv/
+env/
+ENV/
+.venv/
+.env/
+.ENV/
+.python-version
+
+# Python 캐시 파일
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
+# 모델 파일 및 데이터셋
+model_artifacts/*
+!model_artifacts/.gitkeep
+*.joblib
+*.pkl
+*.h5
+*.hdf5
+*.model
+*.pb
+*.onnx
+*.parquet
+*.csv
+*.xls
+*.xlsx
+*.db
+*.sqlite
+*.sqlite3
+
+# 로그 파일
+logs/
+*.log
+
+# 환경 설정 파일
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env.*
+
+# 편집기 설정
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 빌드 관련
+*.egg-info/
+dist/
+build/
+.eggs/
+wheels/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Flask 특정
+instance/
+.webassets-cache
+flask_session/
+
+# 기타
+.directory
+node_modules/
+celerybeat-schedule
+celerybeat.pid
+*.sage.py
+.spyderproject
+.spyproject
+.ropeproject
+local_settings.py
