@@ -14,8 +14,8 @@ def create_app():
             "message": "Welcome to APT Auction AI API",
             "version": "1.0",
             "endpoints": {
-                "health": "/health",
-                "predict_price": "/api/v1/predict-price"
+                "home": "/",
+                "health": "/health"
             }
         })
 
@@ -25,8 +25,6 @@ def create_app():
 
     return app
 
-
-# 애플리케이션 인스턴스 생성
 app = create_app()
 
 if __name__ == '__main__':
