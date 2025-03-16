@@ -1,30 +1,55 @@
-from flask import Blueprint, request, jsonify
-from app.services.auction_service import AuctionAnalysisService
+from fastapi import APIRouter, HTTPException
 from app.schemas.request import AuctionAnalysisRequest
+from app.schemas.response import AuctionAnalysisResponse
+from app.services.auction_service import predict_auction_results, validate_auction_data
 
-predictions_bp = Blueprint('predictions', __name__)
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["predictions"],
+)
 
-@predictions_bp.route('/analyze-auction', methods=['POST'])
-def analyze_auction():
-    """경매 분석 API 엔드포인트"""
+@router.post("/predict-auction", response_model=AuctionAnalysisResponse)
+async def predict_auction(request: AuctionAnalysisRequest):
+    """
+    경매 결과 예측 API
+    """
     try:
-        # 요청 데이터 파싱
-        data = request.get_json()
-        if not data:
-            return jsonify({"success": False, "errorMessage": "No input data provided"}), 400
+        # 요청 데이터를 딕셔너리로 변환
+        request_dict = request.dict()
 
-        # 요청 객체 생성
-        auction_request = AuctionAnalysisRequest.from_dict(data)
+        # 예측 수행
+        result = predict_auction_results(request_dict)
 
-        # 서비스 호출
-        service = AuctionAnalysisService()
-        result = service.analyze_auction(auction_request)
-
-        # 응답 반환
-        return jsonify(result.to_dict()), 200
-
+        return result
     except Exception as e:
-        return jsonify({
-            "success": False,
-            "errorMessage": f"Analysis failed: {str(e)}"
-        }), 500
+        raise HTTPException(
+            status_code=500,
+            detail=f"예측 실패: {str(e)}"
+        )
+
+@router.post("/validate-input")
+async def validate_input(request: AuctionAnalysisRequest):
+    """
+    입력 데이터 검증 API
+    """
+    try:
+        # 요청 데이터를 딕셔너리로 변환
+        request_dict = request.dict()
+
+        # 데이터 검증
+        validation_result = validate_auction_data(request_dict)
+
+        if validation_result["status"] == "valid":
+            return validation_result
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=validation_result["error"]
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"유효하지 않은 입력 데이터: {str(e)}"
+        )

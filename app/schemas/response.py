@@ -1,85 +1,63 @@
-from dataclasses import dataclass
-from typing import Dict, Any, List, Optional, Literal
-from enum import Enum
+from pydantic import BaseModel
+from typing import List, Optional
 
+class Prediction(BaseModel):
+    predictedPrice: int
+    priceRatio: float
+    confidence: float
+    failureProbability: float
 
-class RiskLevel(str, Enum):
-    LOW = "LOW"
-    MEDIUM = "MEDIUM"
-    HIGH = "HIGH"
+class AuctionPrediction(BaseModel):
+    failureProbability: float
+    expectedSuccessAttempt: int
+    optimalBidPrice: int
 
+class RiskAssessment(BaseModel):
+    riskLevel: str  # "LOW", "MEDIUM", "HIGH"
+    riskFactors: List[str]
 
-@dataclass
-class Scores:
-    total: float  # 종합 점수 (0-100)
-    value: float  # 가치 점수 (0-1)
-    location: float  # 입지 점수 (0-1)
-    legal: float  # 법적 안정성 점수 (0-1)
+class SimilarCase(BaseModel):
+    caseId: str
+    appraisalValue: int
+    finalPrice: int
+    priceRatio: float
+    failCount: int
 
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'total': self.total,
-            'value': self.value,
-            'location': self.location,
-            'legal': self.legal
+class AuctionAnalysisResponse(BaseModel):
+    prediction: Prediction
+    auctionPrediction: AuctionPrediction
+    riskAssessment: RiskAssessment
+    similarCases: List[SimilarCase]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "prediction": {
+                    "predictedPrice": 340000000,
+                    "priceRatio": 0.8,
+                    "confidence": 0.87,
+                    "failureProbability": 0.35
+                },
+                "auctionPrediction": {
+                    "failureProbability": 0.35,
+                    "expectedSuccessAttempt": 3,
+                    "optimalBidPrice": 350000000
+                },
+                "riskAssessment": {
+                    "riskLevel": "MEDIUM",
+                    "riskFactors": [
+                        "임차인 점유 중",
+                        "유찰 횟수 높음"
+                    ]
+                },
+                "similarCases": [
+                    {
+                        "caseId": "20190520058123",
+                        "appraisalValue": 430000000,
+                        "finalPrice": 344000000,
+                        "priceRatio": 0.8,
+                        "failCount": 2
+                    }
+                ]
+            }
         }
-
-
-@dataclass
-class PriceAnalysis:
-    market_ratio: float  # 시세 대비 비율
-    expected_bid_price: float  # 예상 낙찰가
-    expected_return: float  # 예상 수익률
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'marketRatio': self.market_ratio,
-            'expectedBidPrice': self.expected_bid_price,
-            'expectedReturn': self.expected_return
-        }
-
-
-@dataclass
-class RiskAnalysis:
-    risk_level: RiskLevel  # 위험 수준
-    risk_factors: List[str]  # 주요 위험 요소
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'riskLevel': self.risk_level.value,
-            'riskFactors': self.risk_factors
-        }
-
-
-@dataclass
-class Analysis:
-    price_analysis: PriceAnalysis
-    risk_analysis: RiskAnalysis
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'priceAnalysis': self.price_analysis.to_dict(),
-            'riskAnalysis': self.risk_analysis.to_dict()
-        }
-
-
-@dataclass
-class AuctionAnalysisResponse:
-    success: bool
-    scores: Optional[Scores] = None
-    analysis: Optional[Analysis] = None
-    error_message: Optional[str] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        result = {'success': self.success}
-
-        if self.scores:
-            result['scores'] = self.scores.to_dict()
-
-        if self.analysis:
-            result['analysis'] = self.analysis.to_dict()
-
-        if self.error_message:
-            result['errorMessage'] = self.error_message
-
-        return result

@@ -1,82 +1,80 @@
-from dataclasses import dataclass
-from typing import Dict, Any, Optional
-from datetime import datetime
+from pydantic import BaseModel, Field
+from typing import Optional, List
 
-
-@dataclass
-class Coordinates:
+class Location(BaseModel):
+    state: str
+    city: str
+    dong: str
     latitude: float
     longitude: float
 
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Coordinates':
-        return cls(
-            latitude=data.get('latitude'),
-            longitude=data.get('longitude')
-        )
+class BuildingDetails(BaseModel):
+    structure: str
+    totalArea: float
+    floorInfo: str
 
+class OccupancyInfo(BaseModel):
+    isOccupied: bool
+    tenantCount: Optional[int] = 0
 
-@dataclass
-class BasicInfo:
-    court_name: str
-    case_number: str
-    case_type: str
-    appraised_value: float
-    claim_amount: float
+class PropertyInfo(BaseModel):
+    propertyType: str
+    location: Location
+    buildingDetails: BuildingDetails
+    occupancyInfo: OccupancyInfo
 
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BasicInfo':
-        return cls(
-            court_name=data.get('courtName'),
-            case_number=data.get('caseNumber'),
-            case_type=data.get('caseType'),
-            appraised_value=float(data.get('appraisedValue')),
-            claim_amount=float(data.get('claimAmount'))
-        )
+class AuctionInfo(BaseModel):
+    caseId: str
+    courtName: str
+    caseType: str
+    appraisalValue: int
+    minimumBidPrice: int
+    failCount: int = 0
 
+class MarketInfo(BaseModel):
+    avgAuctionPriceRate3m: Optional[float] = None
+    avgAuctionPriceRate12m: Optional[float] = None
+    avgFailCount3m: Optional[float] = None
 
-@dataclass
-class PropertyInfo:
-    property_type: str
-    building_structure: str
-    size: float
-    address: str
-    coordinates: Coordinates
+class AuctionAnalysisRequest(BaseModel):
+    auctionInfo: AuctionInfo
+    propertyInfo: PropertyInfo
+    marketInfo: Optional[MarketInfo] = None
 
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'PropertyInfo':
-        return cls(
-            property_type=data.get('propertyType'),
-            building_structure=data.get('buildingStructure'),
-            size=float(data.get('size')),
-            address=data.get('address'),
-            coordinates=Coordinates.from_dict(data.get('coordinates', {}))
-        )
-
-
-@dataclass
-class DateInfo:
-    received_date: str
-    decision_date: str
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'DateInfo':
-        return cls(
-            received_date=data.get('receivedDate'),
-            decision_date=data.get('decisionDate')
-        )
-
-
-@dataclass
-class AuctionAnalysisRequest:
-    basic_info: BasicInfo
-    property_info: PropertyInfo
-    date_info: DateInfo
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'AuctionAnalysisRequest':
-        return cls(
-            basic_info=BasicInfo.from_dict(data.get('basicInfo', {})),
-            property_info=PropertyInfo.from_dict(data.get('propertyInfo', {})),
-            date_info=DateInfo.from_dict(data.get('dateInfo', {}))
-        )
+    class Config:
+        schema_extra = {
+            "example": {
+                "auctionInfo": {
+                    "caseId": "20200130101073",
+                    "courtName": "서울중앙지방법원",
+                    "caseType": "부동산강제경매",
+                    "appraisalValue": 424000000,
+                    "minimumBidPrice": 424000000,
+                    "failCount": 1
+                },
+                "propertyInfo": {
+                    "propertyType": "20111",
+                    "location": {
+                        "state": "서울특별시",
+                        "city": "서초구",
+                        "dong": "양재동",
+                        "latitude": 37.4840221129458,
+                        "longitude": 127.036695192276
+                    },
+                    "buildingDetails": {
+                        "structure": "철근콘크리트구조",
+                        "totalArea": 96.43,
+                        "floorInfo": "지층비101호"
+                    },
+                    "occupancyInfo": {
+                        "isOccupied": True,
+                        "tenantCount": 1
+                    }
+                },
+                "marketInfo": {
+                    "avgAuctionPriceRate3m": 46,
+                    "avgAuctionPriceRate12m": 57,
+                    "avgFailCount3m": 4.6
+                }
+            }
+        }

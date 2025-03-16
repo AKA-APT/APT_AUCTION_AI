@@ -1,31 +1,26 @@
-from flask import Flask, jsonify
-from app.routers.predictions import predictions_bp
+from fastapi import FastAPI
+from app.routers import predictions
 
+app = FastAPI(
+    title="경매 예측 AI API",
+    description="XGBoost 기반 경매 유찰 확률 및 낙찰가 예측 API",
+    version="1.0.0"
+)
 
-def create_app():
-    app = Flask(__name__)
+# 라우터 등록
+app.include_router(predictions.router)
 
-    # 블루프린트 등록
-    app.register_blueprint(predictions_bp, url_prefix='/api/v1')
+@app.get("/")
+async def root():
+    return {
+        "message": "경매 예측 AI API",
+        "version": "1.0",
+        "endpoints": {
+            "predict": "/api/v1/predict-auction",
+            "validate": "/api/v1/validate-input"
+        }
+    }
 
-    @app.route('/')
-    def home():
-        return jsonify({
-            "message": "Welcome to APT Auction AI API",
-            "version": "1.0",
-            "endpoints": {
-                "home": "/",
-                "health": "/health"
-            }
-        })
-
-    @app.route('/health')
-    def health_check():
-        return {"status": "healthy"}
-
-    return app
-
-app = create_app()
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
