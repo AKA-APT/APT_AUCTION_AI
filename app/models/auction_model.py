@@ -3,6 +3,9 @@ import pandas as pd
 from xgboost import XGBRegressor, XGBClassifier
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.base import clone
+import numpy as np
+import types
 import joblib
 import os
 
@@ -85,6 +88,53 @@ class AuctionPriceModel:
 
         # 모델 저장
         joblib.dump(self.model, filepath)
+
+    def update_model(self, X_train, y_train, X_val=None, y_val=None):
+        """
+        기존 모델을 새로운 데이터로 증분 학습합니다.
+        """
+        # 모델 유형에 따라 다른 증분 학습 방법 적용
+        if hasattr(self.model, 'partial_fit'):
+            # 온라인 학습 지원 모델 (SGDRegressor 등)
+            self.model.partial_fit(X_train, y_train)
+        else:
+            # 온라인 학습을 지원하지 않는 모델
+            # 1. 기존 모델과 새 모델의 앙상블 구성
+            new_model = clone(self.model)
+            new_model.fit(X_train, y_train)
+
+            # 앙상블 가중치 설정 (검증 데이터로 최적화)
+            if X_val is not None and y_val is not None:
+                # 기존 모델과 새 모델의 예측 결합
+                pred_old = self.model.predict(X_val)
+                pred_new = new_model.predict(X_val)
+
+                # 최적 가중치 찾기 (간단한 그리드 서치)
+                best_score = float('-inf')
+                best_weight = 0.5
+
+                for w in np.linspace(0, 1, 11):
+                    pred_ensemble = w * pred_old + (1-w) * pred_new
+                    score = -mean_squared_error(y_val, pred_ensemble)
+
+                    if score > best_score:
+                        best_score = score
+                        best_weight = w
+
+                # 앙상블 가중치 저장
+                self.ensemble_weights = [best_weight, 1-best_weight]
+                self.ensemble_models = [self.model, new_model]
+
+                # 예측 메서드 오버라이드
+                def weighted_predict(self, X):
+                    pred_old = self.ensemble_models[0].predict(X)
+                    pred_new = self.ensemble_models[1].predict(X)
+                    return self.ensemble_weights[0] * pred_old + self.ensemble_weights[1] * pred_new
+
+                self.predict = types.MethodType(weighted_predict, self)
+            else:
+                # 검증 데이터가 없으면 새 모델로 대체
+                self.model = new_model
 
     @classmethod
     def load(cls, filepath):
@@ -200,6 +250,53 @@ class AuctionFailureModel:
         # 모델 저장
         joblib.dump(self.model, filepath)
 
+    def update_model(self, X_train, y_train, X_val=None, y_val=None):
+        """
+        기존 모델을 새로운 데이터로 증분 학습합니다.
+        """
+        # 모델 유형에 따라 다른 증분 학습 방법 적용
+        if hasattr(self.model, 'partial_fit'):
+            # 온라인 학습 지원 모델 (SGDRegressor 등)
+            self.model.partial_fit(X_train, y_train)
+        else:
+            # 온라인 학습을 지원하지 않는 모델
+            # 1. 기존 모델과 새 모델의 앙상블 구성
+            new_model = clone(self.model)
+            new_model.fit(X_train, y_train)
+
+            # 앙상블 가중치 설정 (검증 데이터로 최적화)
+            if X_val is not None and y_val is not None:
+                # 기존 모델과 새 모델의 예측 결합
+                pred_old = self.model.predict(X_val)
+                pred_new = new_model.predict(X_val)
+
+                # 최적 가중치 찾기 (간단한 그리드 서치)
+                best_score = float('-inf')
+                best_weight = 0.5
+
+                for w in np.linspace(0, 1, 11):
+                    pred_ensemble = w * pred_old + (1-w) * pred_new
+                    score = -mean_squared_error(y_val, pred_ensemble)
+
+                    if score > best_score:
+                        best_score = score
+                        best_weight = w
+
+                # 앙상블 가중치 저장
+                self.ensemble_weights = [best_weight, 1-best_weight]
+                self.ensemble_models = [self.model, new_model]
+
+                # 예측 메서드 오버라이드
+                def weighted_predict(self, X):
+                    pred_old = self.ensemble_models[0].predict(X)
+                    pred_new = self.ensemble_models[1].predict(X)
+                    return self.ensemble_weights[0] * pred_old + self.ensemble_weights[1] * pred_new
+
+                self.predict = types.MethodType(weighted_predict, self)
+            else:
+                # 검증 데이터가 없으면 새 모델로 대체
+                self.model = new_model
+
     @classmethod
     def load(cls, filepath):
         """
@@ -287,6 +384,53 @@ class AuctionAttemptsModel:
 
         # 모델 저장
         joblib.dump(self.model, filepath)
+
+    def update_model(self, X_train, y_train, X_val=None, y_val=None):
+        """
+        기존 모델을 새로운 데이터로 증분 학습합니다.
+        """
+        # 모델 유형에 따라 다른 증분 학습 방법 적용
+        if hasattr(self.model, 'partial_fit'):
+            # 온라인 학습 지원 모델 (SGDRegressor 등)
+            self.model.partial_fit(X_train, y_train)
+        else:
+            # 온라인 학습을 지원하지 않는 모델
+            # 1. 기존 모델과 새 모델의 앙상블 구성
+            new_model = clone(self.model)
+            new_model.fit(X_train, y_train)
+
+            # 앙상블 가중치 설정 (검증 데이터로 최적화)
+            if X_val is not None and y_val is not None:
+                # 기존 모델과 새 모델의 예측 결합
+                pred_old = self.model.predict(X_val)
+                pred_new = new_model.predict(X_val)
+
+                # 최적 가중치 찾기 (간단한 그리드 서치)
+                best_score = float('-inf')
+                best_weight = 0.5
+
+                for w in np.linspace(0, 1, 11):
+                    pred_ensemble = w * pred_old + (1-w) * pred_new
+                    score = -mean_squared_error(y_val, pred_ensemble)
+
+                    if score > best_score:
+                        best_score = score
+                        best_weight = w
+
+                # 앙상블 가중치 저장
+                self.ensemble_weights = [best_weight, 1-best_weight]
+                self.ensemble_models = [self.model, new_model]
+
+                # 예측 메서드 오버라이드
+                def weighted_predict(self, X):
+                    pred_old = self.ensemble_models[0].predict(X)
+                    pred_new = self.ensemble_models[1].predict(X)
+                    return self.ensemble_weights[0] * pred_old + self.ensemble_weights[1] * pred_new
+
+                self.predict = types.MethodType(weighted_predict, self)
+            else:
+                # 검증 데이터가 없으면 새 모델로 대체
+                self.model = new_model
 
     @classmethod
     def load(cls, filepath):

@@ -5,8 +5,7 @@ import pandas as pd
 from app.services.preprocessing import preprocess_input_data
 from app.services.feature_engineering import (
     calculate_optimal_bid, analyze_risk_factors,
-    determine_risk_level, find_similar_cases,
-    calculate_confidence
+    determine_risk_level
 )
 
 class AuctionPredictionPipeline:
@@ -70,7 +69,6 @@ class AuctionPredictionPipeline:
             results["prediction"] = {
                 "predictedPrice": int(predicted_price),
                 "priceRatio": float(price_ratio),
-                "confidence": calculate_confidence(processed_data)
             }
         else:
             # 모델이 없는 경우 더미 값
@@ -113,9 +111,6 @@ class AuctionPredictionPipeline:
             "riskLevel": risk_level,
             "riskFactors": risk_factors
         }
-
-        # 유사 사례 검색
-        results["similarCases"] = find_similar_cases(input_df)
 
         return results
 

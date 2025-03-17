@@ -173,36 +173,3 @@ def determine_risk_level(risk_factors, failure_prob, price_ratio):
     # 저위험 조건
     else:
         return "LOW"
-
-def find_similar_cases(input_data, db_collection=None):
-    """
-    유사한 경매 사례 검색 (실제로는 DB 검색 필요)
-    """
-    # 실제 구현에서는 MongoDB에서 유사 물건 검색
-    # 예시 구현
-    similar_cases = [
-        {
-            "caseId": "20190520058123",
-            "appraisalValue": 430000000,
-            "finalPrice": 344000000,
-            "priceRatio": 0.8,
-            "failCount": 2
-        },
-        {
-            "caseId": "20210310045678",
-            "appraisalValue": 410000000,
-            "finalPrice": 328000000,
-            "priceRatio": 0.8,
-            "failCount": 1
-        }
-    ]
-
-    return similar_cases
-
-def calculate_confidence(features):
-    """
-    예측 신뢰도 계산 (예시 구현)
-    """
-    # 실제로는 더 복잡한 로직 필요
-    # 예: 유사 사례 수, 데이터 품질 등 고려
-    return 0.87
