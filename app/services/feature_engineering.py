@@ -76,7 +76,13 @@ def create_train_dataset_from_mongo(mongo_collection):
     """
     features_list = []
 
-    for doc in mongo_collection.find():
+    # mongo_collection이 리스트인지 MongoDB 컬렉션인지 확인
+    if isinstance(mongo_collection, list):
+        documents = mongo_collection
+    else:
+        documents = mongo_collection.find()
+
+    for doc in documents:
         # 완료된 경매 건만 선택 (낙찰가가 있는 경우)
         completed_auctions = [auction for auction in doc.get('gdsDspslDxdyLst', [])
                              if auction.get('auctnDxdyRsltCd') == '002' and auction.get('dspslAmt')]
