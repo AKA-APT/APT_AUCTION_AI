@@ -302,8 +302,8 @@ def incremental_train_models(mongo_uri, db_name, collection_name, output_dir='mo
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="경매 예측 모델 증분 학습")
     parser.add_argument('--mongo-uri', type=str, default=MONGO_URI, help='MongoDB URI')
-    parser.add_argument('--db-name', type=str, default='auction_db', help='데이터베이스 이름')
-    parser.add_argument('--collection', type=str, default='auction_data', help='컬렉션 이름')
+    parser.add_argument('--db-name', type=str, default='apt', help='데이터베이스 이름')
+    parser.add_argument('--collection', type=str, default='detail_auctions', help='컬렉션 이름')
     parser.add_argument('--output-dir', type=str, default='model_artifacts', help='모델 저장 디렉토리')
 
     args = parser.parse_args()
@@ -313,4 +313,3 @@ if __name__ == "__main__":
 
     # 증분 학습 실행
     incremental_train_models(args.mongo_uri, args.db_name, args.collection, args.output_dir)
-

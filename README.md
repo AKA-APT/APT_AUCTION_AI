@@ -4,9 +4,7 @@ pip install -r requirements.txt
 
 1.	모델 학습:
 ```
-# Windows에서 set, Linux/macOS에서 export
-set MONGO_URI=      .env의 MONGO_URI 값
-python train_models.py --mongo-uri $env:MONGO_URI --db-name auction_db --collection auction_data
+python train_models.py
 ```
 
 2.	API 서버 실행:
